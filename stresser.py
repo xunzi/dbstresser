@@ -23,10 +23,13 @@ def mysql_connect():
         _cur = _con.cursor()
         return (_con,_cur)
 
+def debugprint(msg):
+	if args.debug:
+		syst.stdout.write("%s\n" % msg)
 
 def oracle_connect():
         _dsn = cx_Oracle.makedsn(args.dbhost, 1521, args.dbname)
-        print _dsn
+        debugprint(_dsn)
         _con = cx_Oracle.connect(args.dbuser, args.dbpass, _dsn)
         _cur = _con.cursor()
         return(_con, _cur)
@@ -73,7 +76,7 @@ def log2db(cursor,insertid,message):
         cursor.execute(_sql, (insertid, os.getpid(), message))        
 
 def insert_job(pid, q, tablename, flavour):
-	print "Process ID %d, PID %d" % (pid, os.getpid())
+	debugprint("Process ID %d, PID %d" % (pid, os.getpid()))
 	q.put(insert_data(tablename, flavour))
 
 def init_table(flavour, tname):
@@ -142,7 +145,7 @@ def init_table(flavour, tname):
                         _cur.execute(drop_trigger_oracle)
                 except cx_Oracle.DatabaseError:
                         print "Exception occurred"
-                print "Creating Table %s, Sequence %s_seq and Trigger %s_trig" % (tname, tname, tname)
+                debugprint ("Creating Table %s, Sequence %s_seq and Trigger %s_trig" % (tname, tname, tname))
                 _cur.execute(create_table_oracle)
                 _cur.execute(create_sequence_oracle)
                 _cur.execute(create_trigger_oracle)
@@ -153,9 +156,9 @@ def init_table(flavour, tname):
                 if args.mode == "mysql":
                         _cur.execute(create_log_table_mysql)                        
                 elif args.mode == "oracle":
-                        print create_log_table_oracle
+                        debugprint (create_log_table_oracle)
                         _cur.execute(create_log_table_oracle)
-                print "created logging table %slog" % tname
+                debugprint( "created logging table %slog" % tname)
 	_cur.close()
         _con.close()
 	return tname
@@ -167,7 +170,7 @@ def drop_table(tname):
 	_sql = "DROP TABLE %s" % tname
 	(_con,_cur) = mysql_connect()
 	_cur.execute(_sql)
-	print "dropped table ", tname
+	debugprint ("dropped table ", tname)
 	_cur.close()
         _con.close()
 
@@ -183,7 +186,7 @@ def delete_random_lines(tname, deletions):
                 #time.sleep(1)
         _end = time.time()
         _runtime = _end - _start
-        print "deleted %d rows in %d seconds" % (deletions, _runtime)
+        debugprint( "deleted %d rows in %d seconds" % (deletions, _runtime))
         _cur.close()
         _con.close()
 
@@ -206,6 +209,7 @@ if __name__ == "__main__":
         parser.add_argument("-l", "--log", help = "Log every checkpoint commit to table named <table>log", dest = "log", default = False, action = "store_true")
         parser.add_argument("-e", "--delete", help = "number of  random entries to be deleted", dest = "delete", type = int, default = 0)
         parser.add_argument("-m", "--mode", help = "database mode, mysql or oracle, default = mysql", dest = "mode", default="mysql")
+	parser.add_argument("-V", "--debug", help = "Debug Mode, verbose output", dest = "debug", default = False, action = "store_true")
 
 	args = parser.parse_args()
 
@@ -217,18 +221,18 @@ if __name__ == "__main__":
                 sys.stderr.write("No valid db type, should be either mysql or oracle\n")
                 sys.exit(1)
 	table = init_table(flavour=args.mode, tname=args.tname)                
-	print "Created table ", table
+	debugprint("Created table ", table)
 	(words, sentences) = init_words(args.infile)
-	print "%d words and %d sentences" % (len(words), len(sentences))
-	print "running %d parallel insert jobs inserting %d rows each and committing every %d transaction against table %s" % (args.parallel, args.numrows, args.checkpoint, table)
+	debugprint( "%d words and %d sentences" % (len(words), len(sentences)))
+	debugprint ("running %d parallel insert jobs inserting %d rows each and committing every %d transaction against table %s" % (args.parallel, args.numrows, args.checkpoint, table))
 	plist = []
-        print "starting insertion jobs"
+        debugprint ("starting insertion jobs")
 	for i in range(args.parallel):
 		p = multiprocessing.Process(target=insert_job, args=(i,q, table, args.mode))
 		plist.append(p)
 		p.start()
         if args.delete:
-                print "starting delete job"
+                debugprint( "starting delete job")
                 p = multiprocessing.Process(target=delete_random_lines, args=(table, args.delete))
                 p.start()
 	for proc in plist:
