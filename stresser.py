@@ -221,7 +221,7 @@ if __name__ == "__main__":
                 sys.stderr.write("No valid db type, should be either mysql or oracle\n")
                 sys.exit(1)
 	table = init_table(flavour=args.mode, tname=args.tname)                
-	debugprint("Created table ", table)
+	debugprint("Created table %s" % table)
 	(words, sentences) = init_words(args.infile)
 	debugprint( "%d words and %d sentences" % (len(words), len(sentences)))
 	debugprint ("running %d parallel insert jobs inserting %d rows each and committing every %d transaction against table %s" % (args.parallel, args.numrows, args.checkpoint, table))
