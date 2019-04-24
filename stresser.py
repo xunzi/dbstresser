@@ -25,7 +25,7 @@ def mysql_connect():
 
 def debugprint(msg):
 	if args.debug:
-		syst.stdout.write("%s\n" % msg)
+		sys.stdout.write("%s\n" % msg)
 
 def oracle_connect():
         _dsn = cx_Oracle.makedsn(args.dbhost, 1521, args.dbname)
