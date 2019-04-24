@@ -89,7 +89,7 @@ def init_table(flavour, tname):
         PRIMARY KEY (id),
         KEY txt_idx (txt(15)),
         KEY txt2_idx (txt2(15))
-        ) ENGINE=InnoDB DEFAULT CHARSET=latin1;""" % tname
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;""" % tname
         
         create_log_table_mysql = """ CREATE TABLE %slog (
         id bigint(8) NOT NULL AUTO_INCREMENT,
@@ -98,7 +98,7 @@ def init_table(flavour, tname):
         pid bigint(6),
         logmessage varchar(2048),
         PRIMARY KEY (id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=latin1;""" % tname
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;""" % tname
 
         drop_table_oracle = """DROP TABLE %s""" % tname
         
@@ -170,7 +170,7 @@ def drop_table(tname):
 	_sql = "DROP TABLE %s" % tname
 	(_con,_cur) = mysql_connect()
 	_cur.execute(_sql)
-	debugprint ("dropped table ", tname)
+	debugprint ("dropped table %s" %  tname)
 	_cur.close()
         _con.close()
 
