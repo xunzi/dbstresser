@@ -245,5 +245,6 @@ if __name__ == "__main__":
     results = [q.get() for proc in plist]
     if args.drop:
         drop_table(table)
-        drop_table("%slog" % table)
+        if args.log:
+            drop_table("%slog" % table)
     print("average insertion time per job: %s seconds" % (sum(results) / args.parallel))
